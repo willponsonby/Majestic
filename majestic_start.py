@@ -7,14 +7,14 @@ import csv
 
 driver = webdriver.Chrome(r'C:\Users\wrapo\chromedriver.exe')
 
-driver.get("https://www.majestic.co.uk/wine?pageNum=0&pageSize=6")
-time.sleep(4)
-index = 1
+driver.get("https://www.majestic.co.uk/wine?pageNum=15&pageSize=40")
+time.sleep(5)
+index = 16
 
-csv_file = open('majestic4.csv', 'w', encoding='utf-8', newline='')
+csv_file = open('majestic11.csv', 'w', encoding='utf-8', newline='')
 writer = csv.writer(csv_file)
 
-while index <=2:
+while index <=21:
 	try:
 		print('\n')
 		print("Scraping Page number " + str(index))
@@ -35,16 +35,19 @@ while index <=2:
 			try:
 				percentage = bottle.find_element_by_xpath('.//span[@class="splodge__ba-number"]').text
 				print(percentage)
+				bottle_dict['Percentage'] = percentage
 			except:
 				print('NA')
-			bottle_dict['Percentage'] = percentage	
+				bottle_dict['Percentage'] = 'N/A'
 
 			try:
-			    n_reviewers = bottle.find_element_by_xpath('.//span[@class="splodge__ba-total t-fine"]').text
-			    print(n_reviewers)
+				n_reviewers = bottle.find_element_by_xpath('.//span[@class="splodge__ba-total t-fine"]').text
+				print(n_reviewers)
+				bottle_dict['n_reviewers'] = n_reviewers[3:]
 			except:
-			    print('NA')
-			bottle_dict['n_reviewers'] = n_reviewers[3:]
+				print('NA')
+				bottle_dict['n_reviewers'] = 'N/A'
+			
 		
 			################
 			# open new tab #
@@ -57,7 +60,6 @@ while index <=2:
 			driver.switch_to.window(driver.window_handles[1])
 			time.sleep(1)
 
-
 			awards = driver.find_elements_by_xpath('//div[@class="award-container__award"]/img')
 			lis = []
 			for i in range(len(awards)):
@@ -65,34 +67,62 @@ while index <=2:
 			print(lis[1:])
 			bottle_dict['awards'] = lis[1:]
 
-			ABV = driver.find_element_by_xpath('.//div[@class="product-info__symbol product-info__symbol--abv"]/div').text
-			print(ABV[4:])
-			bottle_dict['ABV'] = ABV[4:]		
+			try:
+				volume = driver.find_element_by_xpath('.//div[@class="product-info__symbol"]/div[@class="product-info__symbol-label"]').text
+				print(volume[:-2])
+				bottle_dict['Volume'] = volume[:-2]
+			except:
+				print('N/A')
+				bottle_dict['Volume'] = 'N/A'
 
-			description = driver.find_element_by_xpath('.//div[@class="product-info__info product-info__info--pdp"]/div[3]/div[@class="product-info__symbol-label"]').text
-			print(description)
-			bottle_dict['Description'] = description
+			try:
+				ABV = driver.find_element_by_xpath('.//div[@class="product-info__symbol product-info__symbol--abv"]/div').text
+				print(ABV[4:])
+				bottle_dict['ABV'] = ABV[4:]
+			except:
+				print('N/A')
+				bottle_dict['ABV'] = 'N/A'		
 
-			full_description = driver.find_element_by_xpath('.//p[@class="product-content__description"]').text
-			print(full_description)
-			bottle_dict['Full Description'] = full_description
+			try:
+				description = driver.find_element_by_xpath('.//div[@class="product-info__info product-info__info--pdp"]/div[3]/div[@class="product-info__symbol-label"]').text
+				print(description)
+				bottle_dict['Description'] = description
+			except:
+				print('N/A')
+				bottle_dict['Volume'] = 'N/A'
 
-			price_per_bottle = driver.find_element_by_xpath('.//span[@class="product-action__price-info"]').text
-			print(price_per_bottle)
-			bottle_dict['Per Bottle Price'] = str((re.findall('\d+', price_per_bottle)[0])) + '.' + str(re.findall('\d+', price_per_bottle)[1])
+			try:
+				full_description = driver.find_element_by_xpath('.//p[@class="product-content__description"]').text
+				print(full_description)
+				bottle_dict['Full Description'] = full_description
+			except:
+				print('N/A')
+				bottle_dict['Full Description'] = 'N/A'
 
-			mix_six_price = driver.find_element_by_xpath('.//span[@class="product-action__price-text"]').text		
-			print(mix_six_price)
-			bottle_dict['Mix Six Price'] = str((re.findall('\d+', mix_six_price)[0])) + '.' + str(re.findall('\d+', mix_six_price)[1])	
+			try:
+				price_per_bottle = driver.find_element_by_xpath('.//span[@class="product-action__price-info"]').text
+				print(price_per_bottle)
+				bottle_dict['Per Bottle Price'] = str((re.findall('\d+', price_per_bottle)[0])) + '.' + str(re.findall('\d+', price_per_bottle)[1])
+			except:
+				print('N/A')
+				bottle_dict['Per Bottle Price'] = 'N/A'
 
-			more_details = driver.find_element_by_xpath('.//p[@class="product-content__more t-link js-more-toggle"]')
-			cookies = driver.find_element_by_xpath('.//span[@class="close js-close-cookie"]')
+			try:
+				mix_six_price = driver.find_element_by_xpath('.//span[@class="product-action__price-text"]').text		
+				print(mix_six_price)
+				bottle_dict['Mix Six Price'] = str((re.findall('\d+', mix_six_price)[0])) + '.' + str(re.findall('\d+', mix_six_price)[1])	
+			except:
+				print('N/A')
+				bottle_dict['Mix Six Price'] = 'N/A'
+			
 			
 			try:
+				cookies = driver.find_element_by_xpath('.//span[@class="close js-close-cookie"]')
 				cookies.click()
 			except:
 				pass
-				
+
+			more_details = driver.find_element_by_xpath('.//p[@class="product-content__more t-link js-more-toggle"]')
 			more_details.click()
 
 			content_table = driver.find_elements_by_xpath('.//table[@class="content-table"]//tr')
@@ -171,7 +201,7 @@ while index <=2:
 			#############
 
 		cookies = driver.find_element_by_xpath('.//span[@class="close js-close-cookie"]')					
-		elementToClick = driver.find_element_by_xpath('//div[@class="search-results__pagination"]//a[@href="/wine?pageNum={}&pageSize=6"]'.format(index-1))
+		elementToClick = driver.find_element_by_xpath('//div[@class="search-results__pagination"]//a[@href="/wine?pageNum={}&pageSize=40"]'.format(index-1))
 
 		try:
 			cookies.click()
